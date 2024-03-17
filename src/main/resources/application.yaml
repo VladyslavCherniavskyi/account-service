@@ -1,0 +1,27 @@
+spring:
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  datasource:
+    url: ${DATASOURCE_URL:}
+    username: ${DATASOURCE_USERNAME:}
+    password: ${DATASOURCE_PASSWORD:}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  sql:
+    init:
+      platform: postgres
+
+cloud:
+  aws:
+    accessKey: ${ACCESS_KEY:}
+    secretAccessKey: ${SECRET_ACCESS_KEY:}
+    region: ${REGION:}
+
+telegram:
+  bot:
+    token: ${BOT_TOKEN:}
+    username: ${BOT_USERNAME:}
