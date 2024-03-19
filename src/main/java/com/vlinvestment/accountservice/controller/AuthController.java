@@ -22,18 +22,13 @@ public class AuthController {
 
     private final AuthFacade authFacade;
 
-    @PostMapping("/sendCode")
+    @PostMapping("/send_code")
     public ResponseEntity<String> sendConfirmationCode(@RequestBody @Valid LoginPhoneDtoRequest request) {
-        authFacade.sendVerificationCode(request.phone());
-        return new ResponseEntity<>("Verification code sent successfully", HttpStatus.OK);
+        return new ResponseEntity<>(authFacade.sendVerificationCode(request), HttpStatus.OK);
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthDtoResponse> login(@RequestBody @Valid UserLoginDtoRequest request) {
-        return ResponseEntity.ok(authFacade.login(request));
-    }
-
-    public ResponseEntity<AuthDtoResponse> verification(@RequestBody @Valid UserLoginDtoRequest request) {
         return ResponseEntity.ok(authFacade.login(request));
     }
 

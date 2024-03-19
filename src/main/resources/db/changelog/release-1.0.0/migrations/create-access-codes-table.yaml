@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-access-codes
+      author: Vladyslav Cherniavskyi
+      changes:
+        - createTable:
+            schemaName: accounts
+            tableName: access_codes
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: source
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: code
+                  type: varchar(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_time
+                  type: timestamp
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: add-access-codes-sequence
+      author: Vladyslav Cherniavskyi
+      changes:
+        - createSequence:
+            schemaName: accounts
+            sequenceName: access_codes_id_seq

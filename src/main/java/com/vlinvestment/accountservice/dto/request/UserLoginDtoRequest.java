@@ -7,8 +7,8 @@ public record UserLoginDtoRequest(
 
         @NotBlank(message = "Phone cannot be empty")
         @Pattern(
-                regexp = "^\\+[0-9]*$",
-                message = "Phone must be a valid numeric value, optionally starting with a '+'"
+                regexp = "^[0-9]*$",
+                message = "Phone must be a valid numeric value without '+'"
         )
         String phone,
 

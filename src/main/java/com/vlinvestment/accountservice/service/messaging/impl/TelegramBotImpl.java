@@ -1,12 +1,10 @@
-package com.vlinvestment.accountservice.service.impl;
+package com.vlinvestment.accountservice.service.messaging.impl;
 
 import com.vlinvestment.accountservice.entity.TelegramUser;
 import com.vlinvestment.accountservice.exeption.TelegramException;
+import com.vlinvestment.accountservice.service.messaging.TelegramBot;
 import com.vlinvestment.accountservice.service.TelegramUserService;
-import com.vlinvestment.accountservice.service.impl.TelegramUserServiceImpl;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -23,31 +21,41 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
 
-@Component
-public class TelegramBot extends TelegramLongPollingBot {
+@Service
+@Transactional
+public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramBot {
 
     private static final String START = "/start";
     private static final String SHARE_CONTACT = "957685e2-2907-4c55-b738-045471f8e90a";
     private static final String DEFAULT_MASSAGE = """
-            Unknown team.
-            Please share contact or send
-            "Get Code" to get the code 🚀
+            --- Unknown command ---
+            Please, "share contact"
+            or send "Get Code"
+            to get the code 🚀
             """;
 
-    private final TelegramUserService telegramUserServiceImpl;
+    private final TelegramUserService telegramUserService;
     @Value("${telegram.bot.username}")
     private String botUsername;
 
-    public TelegramBot(@Value("${telegram.bot.token}") String botToken, TelegramUserServiceImpl telegramUserServiceImpl) {
+    public TelegramBotImpl(@Value("${telegram.bot.token}") String botToken, TelegramUserService telegramUserService) {
         super(botToken);
-        this.telegramUserServiceImpl = telegramUserServiceImpl;
+        this.telegramUserService = telegramUserService;
     }
 
-    public void sendMessage(Long chatId) {
-        sender(chatId, massage());
+    @Override
+    public void sendMessage(String phone, String message) {
+        var chatId = telegramUserService.readByPhone(phone).getChatId();
+        sender(chatId, message);
+    }
+
+    @Override
+    public void sendVerificationCode(String phone, String code) {
+        var text = String.format("You verification code: %s", code);
+        var chatId = telegramUserService.readByPhone(phone).getChatId();
+        sender(chatId, text);
     }
 
     @Override
@@ -78,19 +86,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         return botUsername;
     }
 
-    private void sender(Long chatId, String massage) {
-        var chatIdStr = String.valueOf(chatId);
-        var sendMassage = new SendMessage(chatIdStr, massage);
-        executeSend(sendMassage);
-    }
-
-    private String massage() {
-        var number = IntStream.generate(() -> (int) (Math.random() * 9000) + 1000).findFirst().getAsInt();
-        return "You verification code: " + number;
-    }
-
     private void startCommand(Long chatId) {
-        var exist = telegramUserServiceImpl.existByChatId(chatId);
+        var exist = telegramUserService.existByChatId(chatId);
         var notExistMessage = "You should share your contact \uD83D\uDE80";
         var existMessage = "There is no code for this user \uD83D\uDE48";
         if (exist) {
@@ -103,6 +100,14 @@ public class TelegramBot extends TelegramLongPollingBot {
                     .build()
             );
         }
+    }
+
+    private void sender(Long chatId, String message) {
+        executeSend(SendMessage.builder()
+                .chatId(chatId)
+                .text(message)
+                .build()
+        );
     }
 
     private ReplyKeyboardMarkup createContactKeyboard() {
@@ -123,11 +128,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                 .resizeKeyboard(true)
                 .build();
     }
-    
+
     private void createTelegramUser(Message message) {
         removeKeyboard(message);
         var phoneNumber = message.getContact().getPhoneNumber();
-        telegramUserServiceImpl.createTelegramUser(
+        telegramUserService.create(
                 TelegramUser.builder()
                         .chatId(message.getChatId())
                         .phone(phoneNumber)
@@ -136,14 +141,14 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void removeKeyboard(Message message) {
-        var editedMessage = SendMessage.builder()
+        executeSend(SendMessage.builder()
                 .chatId(message.getChatId())
                 .text("Your phone number is valid")
                 .replyMarkup(ReplyKeyboardRemove.builder()
                         .removeKeyboard(true)
                         .build())
-                .build();
-        executeSend(editedMessage);
+                .build()
+        );
     }
 
     private <T extends Serializable, Method extends BotApiMethod<T>> void executeSend(Method method) {

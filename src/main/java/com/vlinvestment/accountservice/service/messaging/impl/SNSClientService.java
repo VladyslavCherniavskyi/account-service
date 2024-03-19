@@ -1,4 +1,4 @@
-package com.vlinvestment.accountservice.service.impl;
+package com.vlinvestment.accountservice.service.messaging.impl;
 
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.model.PublishRequest;

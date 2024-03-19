@@ -6,4 +6,7 @@ public interface UserService {
 
     User create(User user);
 
+    User readByPhone(String phone);
+
+    boolean existBySource(String source);
 }

@@ -4,7 +4,10 @@ import com.vlinvestment.accountservice.entity.TelegramUser;
 
 public interface TelegramUserService {
 
-    TelegramUser createTelegramUser(TelegramUser telegramUser);
+    TelegramUser create(TelegramUser telegramUser);
 
-    Boolean existByChatId(Long chatId);
+    boolean existByChatId(Long chatId);
+
+    TelegramUser readByPhone(String phone);
+
 }

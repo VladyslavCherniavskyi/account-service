@@ -4,10 +4,11 @@ import com.vlinvestment.accountservice.entity.User;
 import com.vlinvestment.accountservice.repository.UserRepository;
 import com.vlinvestment.accountservice.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.stream.Stream;
 
 @Service
 @Transactional
@@ -27,5 +28,11 @@ public class UserServiceImpl implements UserService {
                         String.format("User with phone:%s is not found", phone)
                 )
         );
+    }
+
+    @Override
+    public boolean existBySource(String source) {
+        return Stream.of(userRepository.existsByPhone(source), userRepository.existsByEmail(source))
+                .anyMatch(isExist -> isExist);
     }
 }

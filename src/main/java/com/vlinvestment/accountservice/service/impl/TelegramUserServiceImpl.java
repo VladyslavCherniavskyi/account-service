@@ -16,13 +16,13 @@ public class TelegramUserServiceImpl implements TelegramUserService {
 
     private final TelegramRepository telegramRepository;
 
-    public TelegramUser createTelegramUser(TelegramUser telegramUser) {
+    public TelegramUser create(TelegramUser telegramUser) {
         verificationExists(telegramUser);
         return telegramRepository.save(telegramUser);
     }
 
     @Override
-    public Boolean existByChatId(Long chatId) {
+    public boolean existByChatId(Long chatId) {
         return telegramRepository.existsById(chatId);
     }
 
@@ -36,9 +36,11 @@ public class TelegramUserServiceImpl implements TelegramUserService {
     }
 
     private void verificationExists(TelegramUser telegramUser) {
-        var existsByPhone = telegramRepository.existsByPhone(telegramUser.getPhone());
-        if (existsByPhone) {
-            throw new ValidationException(String.format("TelegramUser with phone:%s already exists", telegramUser.getPhone()));
+        var exist = telegramRepository.existsByPhone(telegramUser.getPhone());
+        if (exist) {
+            throw new ValidationException(String.format(
+                    "TelegramUser with phone: %s already exists", telegramUser.getPhone())
+            );
         }
     }
 }
