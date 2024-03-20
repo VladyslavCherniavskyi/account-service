@@ -3,9 +3,9 @@ package com.vlinvestment.accountservice.service.messaging.impl;
 import com.vlinvestment.accountservice.entity.AccessCode;
 import com.vlinvestment.accountservice.exeption.VerificationCodeException;
 import com.vlinvestment.accountservice.service.AccessCodeService;
-import com.vlinvestment.accountservice.service.messaging.TelegramBot;
-import com.vlinvestment.accountservice.service.messaging.SenderVerificationCodeService;
 import com.vlinvestment.accountservice.service.messaging.MessagingSource;
+import com.vlinvestment.accountservice.service.messaging.SenderVerificationCodeService;
+import com.vlinvestment.accountservice.service.messaging.TelegramBot;
 import com.vlinvestment.accountservice.utils.GeneratorCodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,7 @@ public class SenderVerificationCodeServiceImpl implements SenderVerificationCode
             case TELEGRAM -> sendVerificationCodeToTelegram(source);
             case VIBER -> sendVerificationCodeToViber(source);
             case PHONE -> sendVerificationCodeToSms(source);
+            case EMAIL -> sendVerificationCodeToEmail(source);
             default -> throw new VerificationCodeException("You have selected an incorrect messagingSource");
         }
         return String.format("Your verification code has been sent to %s", messagingSource);
@@ -52,6 +53,10 @@ public class SenderVerificationCodeServiceImpl implements SenderVerificationCode
 
     private void sendVerificationCodeToSms(String source) {
         System.out.println("send to " + source); //TODO create logic for sms provider
+    }
+
+    private void sendVerificationCodeToEmail(String source) {
+        System.out.println("send to " + source); //TODO create logic for email provider
     }
 
 }

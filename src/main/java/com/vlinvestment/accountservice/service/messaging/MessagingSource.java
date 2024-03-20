@@ -4,6 +4,7 @@ public enum MessagingSource {
 
     TELEGRAM,
     VIBER,
-    PHONE
+    PHONE,
+    EMAIL
 
 }

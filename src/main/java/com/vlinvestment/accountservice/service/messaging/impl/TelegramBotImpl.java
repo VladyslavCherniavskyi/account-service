@@ -1,9 +1,12 @@
 package com.vlinvestment.accountservice.service.messaging.impl;
 
+import com.vlinvestment.accountservice.entity.AccessCode;
 import com.vlinvestment.accountservice.entity.TelegramUser;
 import com.vlinvestment.accountservice.exeption.TelegramException;
-import com.vlinvestment.accountservice.service.messaging.TelegramBot;
+import com.vlinvestment.accountservice.service.AccessCodeService;
 import com.vlinvestment.accountservice.service.TelegramUserService;
+import com.vlinvestment.accountservice.service.messaging.TelegramBot;
+import com.vlinvestment.accountservice.utils.GeneratorCodeUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.Executors;
 
 
 @Service
@@ -37,12 +41,17 @@ public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramB
             """;
 
     private final TelegramUserService telegramUserService;
+    private final AccessCodeService accessCodeService;
     @Value("${telegram.bot.username}")
     private String botUsername;
 
-    public TelegramBotImpl(@Value("${telegram.bot.token}") String botToken, TelegramUserService telegramUserService) {
+    public TelegramBotImpl(
+            @Value("${telegram.bot.token}") String botToken,
+            TelegramUserService telegramUserService,
+            AccessCodeService accessCodeService) {
         super(botToken);
         this.telegramUserService = telegramUserService;
+        this.accessCodeService = accessCodeService;
     }
 
     @Override
@@ -53,7 +62,7 @@ public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramB
 
     @Override
     public void sendVerificationCode(String phone, String code) {
-        var text = String.format("You verification code: %s", code);
+        var text = String.format("Your verification code: %s", code);
         var chatId = telegramUserService.readByPhone(phone).getChatId();
         sender(chatId, text);
     }
@@ -138,6 +147,21 @@ public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramB
                         .phone(phoneNumber)
                         .build()
         );
+        sendAndSaveAccessCode(phoneNumber);
+    }
+
+    private void sendAndSaveAccessCode(String phoneNumber) {
+        var code = GeneratorCodeUtil.generateNumber();
+        var executorService = Executors.newFixedThreadPool(2);
+        executorService.execute(() -> accessCodeService.create(
+                        AccessCode.builder()
+                                .source(phoneNumber)
+                                .code(code)
+                                .build()
+                )
+        );
+        executorService.execute(() -> sendVerificationCode(phoneNumber, code));
+        executorService.shutdown();
     }
 
     private void removeKeyboard(Message message) {

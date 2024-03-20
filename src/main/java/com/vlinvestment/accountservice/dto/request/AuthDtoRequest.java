@@ -5,14 +5,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-public record LoginPhoneDtoRequest(
+public record AuthDtoRequest(
 
-        @NotBlank(message = "Phone cannot be empty")
+        @NotBlank(message = "This field cannot be empty")
         @Pattern(
-                regexp = "^[0-9]*$",
-                message = "Phone must be a valid numeric value without '+'"
+                regexp = "^[0-9]*$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[A-Za-z]{2,6}$",
+                message = "Invalid phone number or email format."
         )
-        String phone,
+        String phoneOrEmail,
 
         @NotNull(message = "MessagingSource cannot be null")
         MessagingSource messagingSource

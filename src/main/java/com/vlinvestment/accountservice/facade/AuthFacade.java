@@ -1,8 +1,8 @@
 package com.vlinvestment.accountservice.facade;
 
-import com.vlinvestment.accountservice.dto.request.LoginPhoneDtoRequest;
+import com.vlinvestment.accountservice.dto.request.AuthDtoRequest;
 import com.vlinvestment.accountservice.dto.request.UserDtoCreateRequest;
-import com.vlinvestment.accountservice.dto.request.UserLoginDtoRequest;
+import com.vlinvestment.accountservice.dto.request.UserSignInDtoRequest;
 import com.vlinvestment.accountservice.dto.response.AuthDtoResponse;
 import com.vlinvestment.accountservice.mapper.UserMapper;
 import com.vlinvestment.accountservice.service.UserService;
@@ -22,23 +22,32 @@ public class AuthFacade {
     private final UserMapper userMapper;
     private final VerificationService verificationService;
 
-    public AuthDtoResponse login(UserLoginDtoRequest request) {
+    public AuthDtoResponse login(UserSignInDtoRequest request) {
         var match = Stream.of(
-                verificationService.isMatchSource(request.phone()),
-                verificationService.isMatchVerificationCode(request.phone(), request.verificationCode())
+                verificationService.isMatchSource(request.phoneOrEmail()),
+                verificationService.isMatchVerificationCode(request.phoneOrEmail(), request.verificationCode())
         ).allMatch(isMatch -> isMatch);
-        if (match) {
+        if (match) { //TODO create security
             return new AuthDtoResponse("User", "This successful");
         }
         return new AuthDtoResponse("User", "This not successful");
     }
 
-    public AuthDtoResponse registerByTelegramBot(UserDtoCreateRequest request) {
-
-        return new AuthDtoResponse(request.phone(), "chatId");
+    public String sendVerificationCode(AuthDtoRequest request) {
+        return senderVerificationCodeService.sendVerificationCode(request.messagingSource(), request.phoneOrEmail());
     }
 
-    public String sendVerificationCode(LoginPhoneDtoRequest request) {
-        return senderVerificationCodeService.sendVerificationCode(request.messagingSource(), request.phone());
+    public String completedPhoneOrEmail(UserSignInDtoRequest request) {
+        if (verificationService.isMatchVerificationCode(request.phoneOrEmail(), request.verificationCode())) {
+            return String.format("This successful completed: %s", request.phoneOrEmail());
+        }
+        return String.format("This not successful completed: %s", request.phoneOrEmail()); //TODO change response
     }
+
+    public AuthDtoResponse register(UserDtoCreateRequest request) {
+        var user = userMapper.mapFrom(request);
+        var createdUser = userService.create(user);
+        return new AuthDtoResponse(createdUser.toString(), "This successful"); //TODO create security
+    }
+
 }
