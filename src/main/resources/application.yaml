@@ -28,3 +28,8 @@ telegram:
   bot:
     token: ${BOT_TOKEN:}
     username: ${BOT_USERNAME:}
+
+jwt:
+  app:
+    secretKey: ${JWT_APP_SECRET_KEY:}
+    expirationMs: ${JWT_APP_EXPIRATION_MS:}

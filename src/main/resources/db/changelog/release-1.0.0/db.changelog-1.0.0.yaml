@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/release-1.0.0/migrations/create-telegram-users-table.yaml
   - include:
       file: db/changelog/release-1.0.0/migrations/create-access-codes-table.yaml
+  - include:
+      file: db/changelog/release-1.0.0/migrations/create-roles-table.yaml
+  - include:
+      file: db/changelog/release-1.0.0/migrations/create-user_role-table.yaml

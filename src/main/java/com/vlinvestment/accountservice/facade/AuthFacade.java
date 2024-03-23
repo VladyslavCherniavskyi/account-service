@@ -7,30 +7,42 @@ import com.vlinvestment.accountservice.dto.response.AuthDtoResponse;
 import com.vlinvestment.accountservice.mapper.UserMapper;
 import com.vlinvestment.accountservice.service.UserService;
 import com.vlinvestment.accountservice.service.messaging.SenderVerificationCodeService;
+import com.vlinvestment.accountservice.service.security.JwtService;
+import com.vlinvestment.accountservice.service.security.impl.UserDetailsImpl;
 import com.vlinvestment.accountservice.verification.VerificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
 public class AuthFacade {
 
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final SenderVerificationCodeService senderVerificationCodeService;
     private final UserMapper userMapper;
     private final VerificationService verificationService;
 
     public AuthDtoResponse login(UserSignInDtoRequest request) {
-        var match = Stream.of(
-                verificationService.isMatchSource(request.phoneOrEmail()),
-                verificationService.isMatchVerificationCode(request.phoneOrEmail(), request.verificationCode())
-        ).allMatch(isMatch -> isMatch);
-        if (match) { //TODO create security
-            return new AuthDtoResponse("User", "This successful");
-        }
-        return new AuthDtoResponse("User", "This not successful");
+        verificationService.checkUserRegister(request.phoneOrEmail());
+        verificationService.verifyCode(request.phoneOrEmail(), request.verificationCode());
+
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.phoneOrEmail(), //TODO add email in security
+                        request.verificationCode()
+                )
+        );
+        var userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        var jwt = jwtService.generateToken(userDetails.getUsername());
+        return new AuthDtoResponse(
+                request.phoneOrEmail(),
+                jwt
+        );
     }
 
     public String sendVerificationCode(AuthDtoRequest request) {
@@ -38,9 +50,9 @@ public class AuthFacade {
     }
 
     public String completedPhoneOrEmail(UserSignInDtoRequest request) {
-        if (verificationService.isMatchVerificationCode(request.phoneOrEmail(), request.verificationCode())) {
-            return String.format("This successful completed: %s", request.phoneOrEmail());
-        }
+//        if (verificationService.isMatchVerificationCode(request.phoneOrEmail(), request.verificationCode())) {
+//            return String.format("This successful completed: %s", request.phoneOrEmail());
+//        }
         return String.format("This not successful completed: %s", request.phoneOrEmail()); //TODO change response
     }
 

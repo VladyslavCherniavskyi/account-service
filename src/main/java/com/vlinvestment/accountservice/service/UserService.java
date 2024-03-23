@@ -9,4 +9,6 @@ public interface UserService {
     User readByPhone(String phone);
 
     boolean existBySource(String source);
+
+    void setPasswordHash(String phone, String code);
 }

@@ -3,6 +3,7 @@ package com.vlinvestment.accountservice.service.impl;
 import com.vlinvestment.accountservice.entity.AccessCode;
 import com.vlinvestment.accountservice.repository.AccessCodeRepository;
 import com.vlinvestment.accountservice.service.AccessCodeService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,11 @@ public class AccessCodeServiceImpl implements AccessCodeService {
 
     @Override
     public String findCodeBySource(String source) {
-        return accessCodeRepository.findCodeBySource(source);
+        return accessCodeRepository.findCodeBySource(source).orElseThrow(
+                () -> new EntityNotFoundException(
+                        String.format("Access code for %s is not found", source)
+                )
+        );
     }
 
 }

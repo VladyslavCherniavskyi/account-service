@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Repository
 public interface AccessCodeRepository extends JpaRepository<AccessCode, Long> {
@@ -17,5 +18,5 @@ public interface AccessCodeRepository extends JpaRepository<AccessCode, Long> {
     boolean existsBySource(String source);
 
     @Query("select ac.code from AccessCode ac where ac.source = :source")
-    String findCodeBySource(String source);
+    Optional<String> findCodeBySource(String source);
 }
