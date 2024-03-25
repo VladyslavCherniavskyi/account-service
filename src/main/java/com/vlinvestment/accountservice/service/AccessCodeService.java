@@ -9,4 +9,7 @@ public interface AccessCodeService {
     boolean existBySource(String source);
 
     String findCodeBySource(String source);
+
+    void delete(String source);
+
 }

@@ -3,15 +3,18 @@ package com.vlinvestment.accountservice.service.messaging.impl;
 import com.vlinvestment.accountservice.entity.AccessCode;
 import com.vlinvestment.accountservice.exeption.VerificationCodeException;
 import com.vlinvestment.accountservice.service.AccessCodeService;
+import com.vlinvestment.accountservice.service.TelegramUserService;
 import com.vlinvestment.accountservice.service.UserService;
 import com.vlinvestment.accountservice.service.messaging.MessagingSource;
 import com.vlinvestment.accountservice.service.messaging.SenderVerificationCodeService;
 import com.vlinvestment.accountservice.service.messaging.TelegramBot;
 import com.vlinvestment.accountservice.utils.GeneratorCodeUtil;
+import com.vlinvestment.accountservice.verification.VerificationTelegramUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 
 @Service
@@ -21,6 +24,7 @@ public class SenderVerificationCodeServiceImpl implements SenderVerificationCode
 
     private final AccessCodeService accessCodeService;
     private final UserService userService;
+    private final VerificationTelegramUserService verificationTelegramUserService;
     private final TelegramBot telegramBot;
 
     @Override
@@ -36,6 +40,7 @@ public class SenderVerificationCodeServiceImpl implements SenderVerificationCode
     }
 
     private void sendVerificationCodeToTelegram(String phone) {
+        verificationTelegramUserService.verifyExistChatId(phone);
         var code = GeneratorCodeUtil.generateNumber();
         var executorService = Executors.newFixedThreadPool(3);
         executorService.execute(() -> userService.setPasswordHash(phone, code));
@@ -43,6 +48,7 @@ public class SenderVerificationCodeServiceImpl implements SenderVerificationCode
                         AccessCode.builder()
                                 .source(phone)
                                 .code(code)
+                                .expirationTime(LocalDateTime.now())
                                 .build()
                 )
         );

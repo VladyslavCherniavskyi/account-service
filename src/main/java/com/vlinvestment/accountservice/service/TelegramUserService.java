@@ -10,4 +10,6 @@ public interface TelegramUserService {
 
     TelegramUser readByPhone(String phone);
 
+    boolean existByPhone(String phone);
+
 }

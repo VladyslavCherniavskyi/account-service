@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -27,16 +28,30 @@ public class VerificationService {
                 );
     }
 
-    public void checkUserRegister(String phoneOrEmail) {
-        Optional.of(!userService.existBySource(phoneOrEmail))
-                .filter(i-> !i)
-//                .map(Object::toString)
+    public void verifyUserRegister(String phoneOrEmail) {
+        Optional.of(userService.existBySource(phoneOrEmail))
+                .filter(c -> !c)
                 .ifPresent(c -> {
                             throw new VerificationCodeException(
                                     String.format("User %s is not register", phoneOrEmail)
                             );
                         }
                 );
+    }
+
+    public void verifyRepeatSend(String phone) {
+        if (accessCodeService.existBySource(phone)) {
+            throw new VerificationCodeException(
+                    "You can send the verification code once within 1 minute. Try later"
+            );
+        }
+    }
+
+    public void verifyCompletedPhoneOrEmail(String phone, String email) {
+        Stream.of(accessCodeService.existBySource(phone), accessCodeService.existBySource(email))
+                .filter(t -> t)
+                .findAny()
+                .orElseThrow(() -> new VerificationCodeException("You should completed your phone or email"));
     }
 
 }

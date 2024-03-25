@@ -1,6 +1,8 @@
 package com.vlinvestment.accountservice.service.security.impl;
 
+import com.vlinvestment.accountservice.exeption.VerificationCodeException;
 import com.vlinvestment.accountservice.service.UserService;
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,7 +17,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = userService.readByPhone(username); // TODO change to username
-        return new UserDetailsImpl(user);
+        return Try.of(() -> userService.readByPhone(username))
+                .recoverWith(throwable -> Try.of(
+                        () -> userService.readByEmail(username))
+                )
+                .map(UserDetailsImpl::new)
+                .getOrElseThrow(
+                        ex -> new VerificationCodeException(ex.getMessage())
+                );
     }
 }

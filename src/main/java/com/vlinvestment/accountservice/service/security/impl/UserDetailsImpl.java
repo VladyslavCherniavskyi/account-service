@@ -1,12 +1,15 @@
 package com.vlinvestment.accountservice.service.security.impl;
 
 import com.vlinvestment.accountservice.entity.User;
+import com.vlinvestment.accountservice.exeption.VerificationCodeException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UserDetailsImpl extends User implements UserDetails {
 
@@ -38,7 +41,11 @@ public class UserDetailsImpl extends User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return super.getPhone();
+        return Stream.of(super.getPhone(), super.getEmail())
+                .filter(Objects::nonNull)
+                .filter(s -> !s.isEmpty())
+                .findAny()
+                .orElseThrow(() -> new VerificationCodeException("Username not found"));
     }
 
     @Override

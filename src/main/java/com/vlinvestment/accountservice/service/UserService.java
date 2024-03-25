@@ -8,6 +8,8 @@ public interface UserService {
 
     User readByPhone(String phone);
 
+    User readByEmail(String email);
+
     boolean existBySource(String source);
 
     void setPasswordHash(String phone, String code);

@@ -1,8 +1,10 @@
 package com.vlinvestment.accountservice.service.impl;
 
 import com.vlinvestment.accountservice.entity.User;
+import com.vlinvestment.accountservice.exeption.VerificationCodeException;
 import com.vlinvestment.accountservice.repository.UserRepository;
 import com.vlinvestment.accountservice.service.UserService;
+import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,7 +28,16 @@ public class UserServiceImpl implements UserService {
     public User readByPhone(String phone) {
         return userRepository.findByPhone(phone).orElseThrow(
                 () -> new EntityNotFoundException(
-                        String.format("User with phone:%s is not found", phone)
+                        String.format("User with phone: %s is not found", phone)
+                )
+        );
+    }
+
+    @Override
+    public User readByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new EntityNotFoundException(
+                        String.format("User with email: %s is not found", email)
                 )
         );
     }
@@ -38,8 +49,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void setPasswordHash(String phone, String code) {
-        var user = readByPhone(phone); //TODO add email
-        user.setPasswordHash(new BCryptPasswordEncoder().encode(code));
+    public void setPasswordHash(String source, String code) {
+        Try.of(() -> readByPhone(source))
+                .recoverWith(throwable -> Try.of(
+                        () -> readByEmail(source))
+                )
+                .peek(user -> user.setPasswordHash(
+                        new BCryptPasswordEncoder().encode(code))
+                )
+                .getOrElseThrow(
+                        ex -> new VerificationCodeException(ex.getMessage())
+                );
     }
 }

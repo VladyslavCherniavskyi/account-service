@@ -1,5 +1,6 @@
 package com.vlinvestment.accountservice.controller;
 
+import com.vlinvestment.accountservice.exeption.VerificationCodeException;
 import com.vlinvestment.accountservice.utils.TimeUtil;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -7,6 +8,7 @@ import jakarta.validation.ValidationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,8 +27,9 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST,
             ConstraintViolationException.class, HttpStatus.BAD_REQUEST,
             DataIntegrityViolationException.class, HttpStatus.BAD_REQUEST,
-            ValidationException.class, HttpStatus.BAD_REQUEST
-//            BadCredentialsException.class, HttpStatus.BAD_REQUEST,
+            ValidationException.class, HttpStatus.BAD_REQUEST,
+            VerificationCodeException.class, HttpStatus.BAD_REQUEST,
+            BadCredentialsException.class, HttpStatus.BAD_REQUEST
     );
 
     @ExceptionHandler

@@ -22,6 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -157,6 +158,7 @@ public class TelegramBotImpl extends TelegramLongPollingBot implements TelegramB
                         AccessCode.builder()
                                 .source(phoneNumber)
                                 .code(code)
+                                .expirationTime(LocalDateTime.now().plusHours(3))
                                 .build()
                 )
         );

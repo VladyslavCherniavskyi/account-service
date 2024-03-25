@@ -2,8 +2,6 @@ package com.vlinvestment.accountservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +10,6 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "access_codes")
 public class AccessCode {
@@ -28,8 +25,7 @@ public class AccessCode {
     @Column(name = "code", nullable = false)
     private String code;
 
-    @CreatedDate
-    @Column(name = "created_time", nullable = false)
-    private LocalDateTime createdTime;
+    @Column(name = "expiration_time", nullable = false)
+    private LocalDateTime expirationTime;
 
 }

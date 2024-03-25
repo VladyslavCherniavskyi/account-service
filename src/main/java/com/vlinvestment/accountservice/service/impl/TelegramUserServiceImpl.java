@@ -35,6 +35,11 @@ public class TelegramUserServiceImpl implements TelegramUserService {
 
     }
 
+    @Override
+    public boolean existByPhone(String phone) {
+        return telegramRepository.existsByPhone(phone);
+    }
+
     private void verificationExists(TelegramUser telegramUser) {
         var exist = telegramRepository.existsByPhone(telegramUser.getPhone());
         if (exist) {

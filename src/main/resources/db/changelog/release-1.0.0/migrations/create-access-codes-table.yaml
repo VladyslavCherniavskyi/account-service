@@ -25,7 +25,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: created_time
+                  name: expiration_time
                   type: timestamp
                   constraints:
                     nullable: false

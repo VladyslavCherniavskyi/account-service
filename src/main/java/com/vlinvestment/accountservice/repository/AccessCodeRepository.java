@@ -13,10 +13,14 @@ import java.util.Optional;
 public interface AccessCodeRepository extends JpaRepository<AccessCode, Long> {
 
     @Modifying
-    void deleteByCreatedTimeBefore(LocalDateTime expirationTime);
+    @Query("delete from AccessCode ac where ac.expirationTime < :time")
+    void deleteByExpirationTimeBefore(LocalDateTime time);
 
     boolean existsBySource(String source);
 
     @Query("select ac.code from AccessCode ac where ac.source = :source")
     Optional<String> findCodeBySource(String source);
+
+    void deleteBySource(String source);
+
 }

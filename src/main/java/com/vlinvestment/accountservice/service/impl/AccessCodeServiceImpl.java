@@ -7,9 +7,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -26,7 +29,7 @@ public class AccessCodeServiceImpl implements AccessCodeService {
 
     @Scheduled(fixedRate = 30000)
     public void deleteByExpirationTime() {
-        accessCodeRepository.deleteByCreatedTimeBefore(LocalDateTime.now().minusMinutes(EXPIRATION_TIME));
+        accessCodeRepository.deleteByExpirationTimeBefore(LocalDateTime.now().minusMinutes(EXPIRATION_TIME));
     }
 
     @Override
@@ -41,6 +44,11 @@ public class AccessCodeServiceImpl implements AccessCodeService {
                         String.format("Access code for %s is not found", source)
                 )
         );
+    }
+
+    @Override
+    public void delete(String source) {
+        accessCodeRepository.deleteBySource(source);
     }
 
 }
